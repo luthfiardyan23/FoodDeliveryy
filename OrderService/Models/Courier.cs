@@ -7,6 +7,6 @@ namespace OrderService.Models
     {
         public int Id { get; set; }
         public string CourierName { get; set; } = null!;
-        public int Phone { get; set; }
+        public string PhoneNumber { get; set; } = null!;
     }
 }

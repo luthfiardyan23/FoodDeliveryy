@@ -11,7 +11,7 @@ namespace FoodService.Models
         }
 
         public int Id { get; set; }
-        public int Code { get; set; }
+        public string Code { get; set; } = null!;
         public int UserId { get; set; }
 
         public virtual ICollection<OrderDetail> OrderDetails { get; set; }

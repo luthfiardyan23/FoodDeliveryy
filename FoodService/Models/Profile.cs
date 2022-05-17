@@ -8,9 +8,9 @@ namespace FoodService.Models
         public int Id { get; set; }
         public int UserId { get; set; }
         public string Name { get; set; } = null!;
-        public string Address { get; set; } = null!;
+        public string Addres { get; set; } = null!;
         public string City { get; set; } = null!;
-        public int Phone { get; set; }
+        public string Phone { get; set; } = null!;
 
         public virtual User User { get; set; } = null!;
     }
