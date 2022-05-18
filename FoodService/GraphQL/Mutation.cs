@@ -68,21 +68,21 @@ namespace FoodService.GraphQL
             return await Task.FromResult(food);
         }
 
-        [Authorize(Roles = new[] { "Manager" })]
-        public async Task<Food> DeleteFoodByIdAsync(
-            int id,
-            [Service] FoodDeliveryContext context)
-        {
-            var food = context.Foods.Where(o => o.Id == id).FirstOrDefault();
-            if (food != null)
-            {
-                context.Foods.Remove(food);
-                await context.SaveChangesAsync();
-            }
+        //[Authorize(Roles = new[] { "Manager" })]
+        //public async Task<Food> DeleteFoodByIdAsync(
+        //    int id,
+        //    [Service] FoodDeliveryContext context)
+        //{
+        //    var food = context.Foods.Where(o => o.Id == id).FirstOrDefault();
+        //    if (food != null)
+        //    {
+        //        context.Foods.Remove(food);
+        //        await context.SaveChangesAsync();
+        //    }
 
 
-            return await Task.FromResult(food);
-        }
+        //    return await Task.FromResult(food);
+        //}
 
         
 
