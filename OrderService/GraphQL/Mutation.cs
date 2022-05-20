@@ -13,8 +13,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using OrderService.Models;
 using OrderService.Models;
-
-
+using Microsoft.EntityFrameworkCore;
 
 namespace OrderService.GraphQL
 {
@@ -97,6 +96,21 @@ namespace OrderService.GraphQL
             return input;
         }
 
+        [Authorize(Roles = new[] { "MANAGER" })]
+        public async Task<Order> DeleteOrderByIdAsync(
+            int id,
+            [Service] FoodDeliveryContext context)
+        {
+            var order = context.Orders.Where(o => o.Id == id).Include(o => o.OrderDetails).FirstOrDefault();
+            if (order != null)
+            {
+                context.Orders.Remove(order);
+                await context.SaveChangesAsync();
+            }
+
+            return await Task.FromResult(order);
+        }
+
         [Authorize]
         public async Task<Courier> AddCourierAsync(
             RegisterCourier input,
@@ -113,5 +127,23 @@ namespace OrderService.GraphQL
             return ret.Entity;
 
         }
+
+        [Authorize(Roles = new[] { "MANAGER" })]
+        public async Task<Courier> UpdateCourierAsync(
+            RegisterCourier input,
+            [Service] FoodDeliveryContext context)
+        {
+            var courier = context.Couriers.Where(o => o.Id == input.Id).FirstOrDefault();
+            if (courier != null)
+            {
+                courier.CourierName = input.CourierName;
+                courier.PhoneNumber = input.PhoneNumber;
+
+                context.Couriers.Update(courier);
+                await context.SaveChangesAsync();
+            }
+            return await Task.FromResult(courier);
+        }
+
     }
 }
