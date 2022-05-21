@@ -35,7 +35,7 @@ namespace UserService.GraphQL
                 Username = input.UserName,
                 Password = BCrypt.Net.BCrypt.HashPassword(input.Password) // encrypt password
             };
-            var memberRole = context.Roles.Where(m => m.Name == "BUYER").FirstOrDefault();
+            var memberRole = context.Roles.Where(m => m.Name == "Buyer").FirstOrDefault();
             if (memberRole == null)
                 throw new Exception("Invalid Role");
             var userRole = new UserRole
@@ -123,7 +123,7 @@ namespace UserService.GraphQL
 
             return await Task.FromResult(user);
         }
-        [Authorize(Roles = new[] { "ADMIN" })]
+        [Authorize(Roles = new[] { "Admin" })]
         public async Task<User> DeleteUserByIdAsync(
             int id,
             [Service] FoodDeliveryContext context)
@@ -179,56 +179,108 @@ namespace UserService.GraphQL
 
         }
 
-        //[Authorize]
-        //public async Task<Order> AddOrderAsync(
-        //    Order input,
-        //    ClaimsPrincipal claimsPrincipal,
-        //    [Service] ProductQLContext context)
-        //{
-        //    using var transaction = context.Database.BeginTransaction();
-        //    var userName = claimsPrincipal.Identity.Name;
+        [Authorize(Roles = new[] { "Manager" })]
+        public async Task<UserData> AddCourierAsync(
+             RegisterUser input,
+             [Service] FoodDeliveryContext context)
+        {
+            var user = context.Users.Where(o => o.Username == input.UserName).FirstOrDefault();
+            if (user != null)
+            {
+                return await Task.FromResult(new UserData());
+            }
+            var newUser = new User
+            {
+                FullName = input.FullName,
+                Email = input.Email,
+                Username = input.UserName,
+                Password = BCrypt.Net.BCrypt.HashPassword(input.Password) // encrypt password
+            };
+            var memberRole = context.Roles.Where(m => m.Name == "Courier").FirstOrDefault();
+            if (memberRole == null)
+                throw new Exception("Invalid Role");
+            var userRole = new UserRole
+            {
+                RoleId = memberRole.Id,
+                UserId = newUser.Id
+            };
+            newUser.UserRoles.Add(userRole);
+            // EF
+            var ret = context.Users.Add(newUser);
+            await context.SaveChangesAsync();
 
-        //    try
-        //    {
-        //        var user = context.Users.Where(o => o.Username == userName).FirstOrDefault();
-        //        if (user != null)
-        //        {
-        //            // EF
-        //            var order = new Order
-        //            {
-        //                Code = Guid.NewGuid().ToString(), // generate random chars using GUID
-        //                UserId = user.Id
-        //            };
+            return await Task.FromResult(new UserData
+            {
+                Id = newUser.Id,
+                Username = newUser.Username,
+                Email = newUser.Email,
+                FullName = newUser.FullName
+            });
+        }
 
-        //            foreach (var item in input.Details)
-        //            {
-        //                var detial = new OrderDetail
-        //                {
-        //                    OrderId = order.Id,
-        //                    ProductId = item.ProductId,
-        //                    Quantity = item.Quantity
-        //                };
-        //                order.OrderDetails.Add(detial);            
-        //            }
-        //            context.Orders.Add(order);
-        //            context.SaveChanges();
-        //            await transaction.CommitAsync();
+        [Authorize(Roles = new[] { "Manager" })]
+        public async Task<Courier> AddCourierProfileAsync(
+           CourierInput input,
+           [Service] FoodDeliveryContext context)
+        {
+            // EF
+            var kurir = new Courier
+            {
+                CourierName = input.CourierName,
+                PhoneNumber = input.Phone,
+                UserId = input.userId
+            };
 
-        //            input.Id = order.Id;
-        //            input.Code = order.Code;
-        //        }
-        //        else
-        //            throw new Exception("user was not found");
-        //    }
-        //    catch(Exception err)
-        //    {
-        //        transaction.Rollback();
-        //    }
+            var ret = context.Couriers.Add(kurir);
+            await context.SaveChangesAsync();
 
+            return ret.Entity;
+        }
+        public async Task<Courier> UpdateCourierAsync(
+            CourierInput input,
+            [Service] FoodDeliveryContext context)
+        {
+            var kurir = context.Couriers.Where(o => o.Id == input.Id).FirstOrDefault();
+            if (kurir != null)
+            {
+                kurir.CourierName = input.CourierName;
+                kurir.PhoneNumber = input.Phone;
 
+                context.Couriers.Update(kurir);
+                await context.SaveChangesAsync();
+            }
 
-        //    return input;
-        //}
+            return await Task.FromResult(kurir);
+        }
+
+        public async Task<User> DeleteCourierByIdAsync(
+            int id,
+            [Service] FoodDeliveryContext context)
+        {
+            var user = context.Users.Where(o => o.Id == id).Include(o => o.UserRoles).FirstOrDefault();
+            if (user != null)
+            {
+                context.Users.Remove(user);
+                await context.SaveChangesAsync();
+            }
+
+            return await Task.FromResult(user);
+        }
+        //Delete CourierProfile
+        public async Task<Courier> DeleteCourierProfileAsync(
+            int id,
+            [Service] FoodDeliveryContext context)
+        {
+            var kurir = context.Couriers.Where(o => o.Id == id).FirstOrDefault();
+            if (kurir != null)
+            {
+                context.Couriers.Remove(kurir);
+                await context.SaveChangesAsync();
+            }
+
+            return await Task.FromResult(kurir);
+        }
+
 
     }
 }

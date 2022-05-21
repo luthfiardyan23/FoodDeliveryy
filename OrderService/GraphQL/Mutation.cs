@@ -96,7 +96,7 @@ namespace OrderService.GraphQL
             return input;
         }
 
-        [Authorize(Roles = new[] { "MANAGER" })]
+        [Authorize(Roles = new[] { "Manager" })]
         public async Task<Order> DeleteOrderByIdAsync(
             int id,
             [Service] FoodDeliveryContext context)

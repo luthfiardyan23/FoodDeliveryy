@@ -32,7 +32,7 @@ namespace UserService.GraphQL
             var userName = claimsPrincipal.Identity.Name;
 
             // check admin role ?
-            var adminRole = claimsPrincipal.Claims.Where(o => o.Type == ClaimTypes.Role && o.Value == "ADMIN").FirstOrDefault();
+            var adminRole = claimsPrincipal.Claims.Where(o => o.Type == ClaimTypes.Role && o.Value == "Admin").FirstOrDefault();
             var user = context.Users.Where(o => o.Username == userName).FirstOrDefault();
             if (user != null)
             {
@@ -61,26 +61,24 @@ namespace UserService.GraphQL
             return new List<Profile>().AsQueryable();
         }
 
-        //[Authorize]
-        //public IQueryable<Order> GetOrders([Service] ProductQLContext context, ClaimsPrincipal claimsPrincipal)
-        //{
-        //    var userName = claimsPrincipal.Identity.Name;
+        [Authorize(Roles = new[] { "Manager" })]
+        public IQueryable<User> GetCouriers([Service] FoodDeliveryContext context)
+        {
+            var roleKurir = context.Roles.Where(k => k.Name == "Manager").FirstOrDefault();
+            var kurirs = context.Users.Where(k => k.UserRoles.Any(o => o.RoleId == roleKurir.Id));
+            return kurirs.AsQueryable();
+        }
 
-        //    // check manager role ?
-        //    var managerRole = claimsPrincipal.Claims.Where(o => o.Type == ClaimTypes.Role && o.Value == "MANAGER").FirstOrDefault();
-        //    var user = context.Users.Where(o => o.Username == userName).FirstOrDefault();
-        //    if (user != null)
-        //    {
-        //        if (managerRole != null)
-        //            return context.Orders.Include(o => o.OrderDetails);
-
-        //        var orders = context.Orders.Where(o => o.UserId == user.Id);
-        //        return orders.AsQueryable();
-        //    }
-
-
-        //    return new List<Order>().AsQueryable();
-        //}
+        [Authorize(Roles = new[] { "Manager" })]
+        public IQueryable<Courier> GetCourierProfiles([Service] FoodDeliveryContext context) =>
+            context.Couriers.Select(p => new Courier()
+            {
+                Id = p.Id,
+                CourierName = p.CourierName,
+                PhoneNumber = p.PhoneNumber,
+                UserId = p.UserId,
+                Availibility = p.Availibility
+            });
 
     }
 }
